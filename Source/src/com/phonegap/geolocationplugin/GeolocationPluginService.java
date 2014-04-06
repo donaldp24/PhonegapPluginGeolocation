@@ -61,8 +61,6 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -86,6 +84,8 @@ public class GeolocationPluginService extends Service {
 	private static int	m_reqFreq = 15000;
 	private static int	m_maxPositions = 10;
 	private static int  m_maxSeconds = 60;
+	private static String m_notifIcon = "";
+	private static String m_notifText = "";
 	
 	private static Handler	m_getLocationHandler = null; 
     
@@ -93,6 +93,7 @@ public class GeolocationPluginService extends Service {
     
     private static android.location.LocationManager mlocManager = null;
     private static MyLocationListener  mlocListener = null;
+    private static int NOTIFICATION_ID = 12345;
     
     
 	@Override
@@ -109,6 +110,8 @@ public class GeolocationPluginService extends Service {
     	m_reqFreq = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_REQUEST_FREQUENCY, 15000);
     	m_maxPositions = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_POSITIONS, 10);
     	m_maxSeconds = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_SECONDS, 60);
+    	m_notifIcon = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(GeolocationPlugin.START_NOTIF_ICON, "");
+    	m_notifText = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(GeolocationPlugin.START_NOTIF_TEXT, "");
 
         // google
         mlocManager = (android.location.LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -138,13 +141,19 @@ public class GeolocationPluginService extends Service {
 	    	m_timerSecond.scheduleAtFixedRate(new SendPositionTask(), m_maxSeconds * 1000, m_maxSeconds * 1000);
     	}
     	
-    	// notification
+    	// send notification
+    	// cannot customize bitmap of setSmallIcon(), and you could confirm it on the site as following
+    	//   http://stackoverflow.com/questions/16055073/set-drawable-or-bitmap-as-icon-in-notificatio-in-android
+    	//	 http://stackoverflow.com/questions/9978219/android-notifications-how-to-post-setsmallicon-using-custom-bitmap
     	NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("My Notification Title")
-                        .setContentText("Something interesting happened");
-        int NOTIFICATION_ID = 12345;
+                        .setContentTitle("GeolocationPlugin")
+                        .setContentText(m_notifText);
+    	
+    	//create a permanent notification while service is running
+    	// http://stackoverflow.com/questions/17948967/how-create-a-permanent-notification-with-battery-level
+    	builder.setOngoing(true); 
 
         Intent targetIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -157,6 +166,10 @@ public class GeolocationPluginService extends Service {
     @Override
     public void onDestroy() {
         Toast.makeText(getApplicationContext(), "Service destroyed", Toast.LENGTH_SHORT).show();
+        
+        // close notification
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.cancel(NOTIFICATION_ID);
 
     	m_reqFreq = 15000;
     	m_maxPositions = 10;
