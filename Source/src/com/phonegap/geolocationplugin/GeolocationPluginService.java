@@ -45,6 +45,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,6 +60,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
@@ -133,6 +137,20 @@ public class GeolocationPluginService extends Service {
 	    	m_timerSecond = new Timer();
 	    	m_timerSecond.scheduleAtFixedRate(new SendPositionTask(), m_maxSeconds * 1000, m_maxSeconds * 1000);
     	}
+    	
+    	// notification
+    	NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("My Notification Title")
+                        .setContentText("Something interesting happened");
+        int NOTIFICATION_ID = 12345;
+
+        Intent targetIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(NOTIFICATION_ID, builder.build());
     	
     }
 
