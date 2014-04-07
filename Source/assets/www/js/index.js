@@ -44,8 +44,7 @@ var app = {
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
-        */
-
+		*/
         console.log('Received Event: ' + id);
     }
 };
@@ -134,17 +133,27 @@ function onPreviousPositions()
 
 function successCurFn(objPosition)
 {
-	
+	// Example for testing.
+	for(var one in objPosition)
+	{		
+		alert(objPosition[one].dt);
+		break;
+	}
 }
 
 function successPrevFn(arrPositions)
 {
-	
+	// Example for testing.
+	for(var one in arrPositions)
+	{		
+		alert(arrPositions[one].dt);
+		break;
+	}
 }
 
 function failureFn(error)
 {
-	
+	alert(error);
 }
 
 
