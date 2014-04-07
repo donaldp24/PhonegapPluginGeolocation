@@ -29,6 +29,8 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +40,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -58,6 +61,8 @@ public class GeolocationPluginService extends Service {
 	//private static int	m_timeout = 5000;
 	private static int	m_maxPositions = 10;
 	private static int  m_maxSeconds = 60;
+	private static String m_notifIcon = "";
+	private static String m_notifText = "";
 	
 	private static Handler	m_getLocationHandler = null; 
     
@@ -65,6 +70,8 @@ public class GeolocationPluginService extends Service {
     private static MyLocationListener  mlocListener = null;
     
     private static SqliteController sqliteCtrl = null;
+    
+    private static int NOTIFICATION_ID = 12345;
     
     
 	@Override
@@ -115,6 +122,26 @@ public class GeolocationPluginService extends Service {
 	    	m_timerSecond = new Timer();
 	    	m_timerSecond.scheduleAtFixedRate(new SendPositionTask(), m_maxSeconds * 1000, m_maxSeconds * 1000);
     	}    	
+    	
+    	// send notification
+    	// cannot customize bitmap of setSmallIcon(), and you could confirm it on the site as following
+    	//   http://stackoverflow.com/questions/16055073/set-drawable-or-bitmap-as-icon-in-notificatio-in-android
+    	//	 http://stackoverflow.com/questions/9978219/android-notifications-how-to-post-setsmallicon-using-custom-bitmap
+    	NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("GeolocationPlugin")
+                        .setContentText(m_notifText);
+    	
+    	//create a permanent notification while service is running
+    	// http://stackoverflow.com/questions/17948967/how-create-a-permanent-notification-with-battery-level
+    	builder.setOngoing(true); 
+
+        Intent targetIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     @Override
@@ -143,6 +170,10 @@ public class GeolocationPluginService extends Service {
 		
 		sqliteCtrl.close();
 		sqliteCtrl = null;
+		
+		// close notification
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificationManager.cancel(NOTIFICATION_ID);
     }
     
     
