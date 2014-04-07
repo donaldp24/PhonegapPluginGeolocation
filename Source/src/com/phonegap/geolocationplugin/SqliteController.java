@@ -123,12 +123,12 @@ public class SqliteController extends SQLiteOpenHelper {
                 	cal.setTimeInMillis(cursor.getLong(1));
                 	String dt = dateFormat.format(cal.getTime());                	
                     oneLoc.put("dt", dt);
-                    oneLoc.put("lat", cursor.getString(2));
-                    oneLoc.put("lon", cursor.getString(3));
-                    oneLoc.put("acc", cursor.getString(4));
-                    oneLoc.put("alt", cursor.getString(5));
-                    oneLoc.put("hdg", cursor.getString(6));
-                    oneLoc.put("spd", cursor.getString(7));
+                    oneLoc.put("lat", Double.valueOf(cursor.getString(2)));
+                    oneLoc.put("lon", Double.valueOf(cursor.getString(3)));
+                    oneLoc.put("acc", Integer.valueOf(cursor.getString(4)));
+                    oneLoc.put("alt", Integer.valueOf(cursor.getString(5)));
+                    oneLoc.put("hdg", Integer.valueOf(cursor.getString(6)));
+                    oneLoc.put("spd", Integer.valueOf(cursor.getString(7)));
                     locList.put(oneLoc);
                 } catch (JSONException e) {
                 	e.printStackTrace();
@@ -163,12 +163,13 @@ public class SqliteController extends SQLiteOpenHelper {
                 	cal.setTimeInMillis(cursor.getLong(1));
                 	String dt = dateFormat.format(cal.getTime());                	                	
                     oneLoc.put("dt", dt);
-                    oneLoc.put("lat", cursor.getString(2));
-                    oneLoc.put("lon", cursor.getString(3));
-                    oneLoc.put("acc", cursor.getString(4));
-                    oneLoc.put("alt", cursor.getString(5));
-                    oneLoc.put("hdg", cursor.getString(6));
-                    oneLoc.put("spd", cursor.getString(7));
+                    oneLoc.put("lat", Double.valueOf(cursor.getString(2)));
+                    oneLoc.put("lon", Double.valueOf(cursor.getString(3)));
+                    oneLoc.put("acc", Integer.valueOf(cursor.getString(4)));
+                    oneLoc.put("alt", Integer.valueOf(cursor.getString(5)));
+                    oneLoc.put("hdg", Integer.valueOf(cursor.getString(6)));
+                    oneLoc.put("spd", Integer.valueOf(cursor.getString(7)));
+                    
                     locList.put(oneLoc);
                 } catch (JSONException e) {
                 	e.printStackTrace();
