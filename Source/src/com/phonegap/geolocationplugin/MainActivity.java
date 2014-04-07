@@ -15,5 +15,12 @@ public class MainActivity extends CordovaActivity
         //super.loadUrl("file:///android_asset/www/index.html");
         super.loadUrl(Config.getStartUrl());
     }
+    
+    @Override
+    public void onDestroy()
+    {
+    	super.onDestroy();
+    }
+    
 }
 

@@ -36,6 +36,9 @@ public class GeolocationPlugin extends CordovaPlugin {
 	public static final String PREVIOUS_NUM_POSITIONS = "PreviousNumPositions";
 	public static final String PREVIOUS_NUM_SECONDS = "PreviousNumSeconds";
 	
+	public static final int SERVICE_STOP = 0;
+	public static final int SERVICE_RUNNING = 1;
+	
 	@Override
 	public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 				
@@ -167,6 +170,22 @@ public class GeolocationPlugin extends CordovaPlugin {
             });
             return true;
 		}
+		else if (action.equals("isServiceRunning")) {
+			
+			this.callback = callbackContext;
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                    	
+                		if (isServiceRunning())
+                			callback.success(SERVICE_RUNNING);
+                		else
+                			callback.success(SERVICE_STOP);
+                    }
+            });
+            return true;
+			
+		}
+		
         return false;
 	}
 	

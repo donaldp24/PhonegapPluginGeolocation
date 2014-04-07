@@ -52,6 +52,32 @@ var app = {
 
 ///////////////////////////////////////////////////////////////
 
+function onLoad()
+{
+	GeolocationPlugin.isServiceRunning();	
+}
+
+function isServiceRunning(flag)
+{
+	var startBtn = document.getElementById("startService");
+	var endBtn = document.getElementById("endService");
+	var curBtn = document.getElementById("getCurrentPositions");
+	var preBtn = document.getElementById("getPreviousPositions");
+
+	if (flag > 0) {
+		startBtn.disabled = true;
+		endBtn.disabled = false;
+		curBtn.disabled = false;
+		preBtn.disabled = false;		
+	}
+	else {
+		startBtn.disabled = false;
+		endBtn.disabled = true;
+		curBtn.disabled = true;
+		preBtn.disabled = true;		
+	}
+}
+
 function updateUI(eventType)
 {
 	var startBtn = document.getElementById("startService");

@@ -12,5 +12,8 @@ var GeolocationPlugin = {
 		},		
 		getpreviouspositions:function(options, successPrevFn, failureFn) {
 			cordova.exec(successPrevFn, failureFn, 'GeolocationPlugin', 'getpreviouspositions', [options]);
+		},
+		isServiceRunning:function() {
+			cordova.exec(isServiceRunning, function(error){}, 'GeolocationPlugin', 'isServiceRunning', []);
 		}
 };
