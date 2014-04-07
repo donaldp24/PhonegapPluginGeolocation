@@ -1,6 +1,5 @@
 package com.phonegap.geolocationplugin;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -12,7 +11,6 @@ import android.content.Context;
 import android.util.Log;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class SqliteController extends SQLiteOpenHelper {
