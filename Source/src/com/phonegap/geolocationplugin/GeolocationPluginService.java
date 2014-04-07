@@ -215,6 +215,7 @@ public class GeolocationPluginService extends Service {
 
         if (isProviderEnabled(GeolocationPluginService.this, provider) )
         {        	
+        	Log.d("GeolocationPlugin", "setCurrentProvider");
         	mlocManager.requestLocationUpdates(provider, (long)(m_reqFreq * 2 / 3), 5, mlocListener);
         }
         
@@ -364,6 +365,8 @@ public class GeolocationPluginService extends Service {
         @Override
         public void onLocationChanged(Location loc)
         {
+            Log.d("GeolocationPlugin", "onLocationChanged");
+        	
         	Calendar cal = Calendar.getInstance();
             double lat = loc.getLatitude();
             double lon = loc.getLongitude();
@@ -381,7 +384,7 @@ public class GeolocationPluginService extends Service {
             locData.put("hdg", String.valueOf(hdg));
             locData.put("spd", String.valueOf(spd));
             
-            sqliteCtrl.insertLocationData(locData);                       
+            sqliteCtrl.insertLocationData(locData);            
         }
 
         @Override

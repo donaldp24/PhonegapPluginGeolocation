@@ -111,7 +111,7 @@ public class GeolocationPlugin extends CordovaPlugin {
                     	
                 		SqliteController sqliteCtrl = GeolocationPluginService.getSqliteControllerHandle();
                 		
-                		JSONArray locDatas = sqliteCtrl.getLocationDatas(curMaxAge);
+                		JSONArray locDatas = sqliteCtrl.getLocationDatasWithinMilliSecond(curMaxAge);
                 		
                 		if (locDatas.length() > 0)
                 		{
@@ -123,9 +123,11 @@ public class GeolocationPlugin extends CordovaPlugin {
                 			{
 								Thread.sleep(curTimeout);
 								
-								locDatas = sqliteCtrl.getLocationDatas(curMaxAge);
+								locDatas = sqliteCtrl.getLocationDatasWithinMilliSecond(curMaxAge);
 		                		if (locDatas.length() > 0)
-		                			callback.success(locDatas);
+		                		{
+		                			callback.success(locDatas);		                			
+		                		}
 		                		else
 		                			callback.error("Timeout Error");
 	                			
@@ -165,7 +167,7 @@ public class GeolocationPlugin extends CordovaPlugin {
                     	if (locDatas.length() > 0)
                     		callback.success(locDatas);
                     	else
-                    		callback.error("Not found teh positions");
+                    		callback.error("Not found the positions");
                     }
             });
             return true;
@@ -175,11 +177,14 @@ public class GeolocationPlugin extends CordovaPlugin {
 			this.callback = callbackContext;
             cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
-                    	
                 		if (isServiceRunning())
+                		{
                 			callback.success(SERVICE_RUNNING);
+                		}
                 		else
+                		{
                 			callback.success(SERVICE_STOP);
+                		}
                     }
             });
             return true;

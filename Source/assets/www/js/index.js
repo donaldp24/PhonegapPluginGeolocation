@@ -32,7 +32,12 @@ var app = {
     //
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicity call 'app.receivedEvent(...);'
-    onDeviceReady: function() {        	    	
+    onDeviceReady: function() {   
+    	//navigator.geolocationplugin = GeolocationPlugin;
+    	//navigator["geolocationplugin"] = GeolocationPlugin;
+    	
+    	GeolocationPlugin.isServiceRunning();	
+    	
     	app.receivedEvent('deviceready');
     },
     // Update DOM on a Received Event
@@ -52,13 +57,8 @@ var app = {
 
 ///////////////////////////////////////////////////////////////
 
-function onLoad()
-{
-	GeolocationPlugin.isServiceRunning();	
-}
-
 function isServiceRunning(flag)
-{
+{	
 	var startBtn = document.getElementById("startService");
 	var endBtn = document.getElementById("endService");
 	var curBtn = document.getElementById("getCurrentPositions");
@@ -118,7 +118,7 @@ function onStartService()
 	updateUI("onStartService");
 	
 	var options = { url: "http://www.test.com", // URL to send positions as JSON 
-		    requestFrequency: "15000",			// how often to request positions
+		    requestFrequency: "5000",			// how often to request positions
 		    maximumAge: "3000",					// same as cordova geolocationOptions
 		    timeout: "5000",					// same as cordova geolocationOptions
 		    maxPositions: "10",					// send to server when X positions have been recorded
@@ -128,6 +128,7 @@ function onStartService()
 			};
 	
 	GeolocationPlugin.startservice(options);
+	//navigator.geolocationplugin.startservice(options);
 }
 
 function onStopService()
@@ -135,6 +136,7 @@ function onStopService()
 	updateUI("onStopService");
 	
 	GeolocationPlugin.stopservice(true);
+	//navigator.geolocationplugin.stopservice(true);
 }
 
 function onGetCurrentPositions()
@@ -145,6 +147,7 @@ function onGetCurrentPositions()
 			};
 	
 	GeolocationPlugin.getcurrentpositions(options, successCurFn, failureFn);
+	//navigator.geolocationplugin.getcurrentpositions(options, successCurFn, failureFn);
 }
 
 function onPreviousPositions()
@@ -155,16 +158,27 @@ function onPreviousPositions()
 			};
 	
 	GeolocationPlugin.getpreviouspositions(options, successPrevFn, failureFn);
+	//navigator.geolocationplugin.getpreviouspositions(options, successPrevFn, failureFn);
+}
+
+function onIsServiceRunning()
+{
+	GeolocationPlugin.isServiceRunning();
 }
 
 function successCurFn(objPosition)
 {
 	// Example for testing.
-	for(var one in objPosition)
-	{		
-		alert(objPosition[one].dt);
-		break;
-	}
+	if (objPosition != null)
+	{
+		alert("dt=" + objPosition[0].dt + 
+				", lat=" + objPosition[0].lat + 
+				", lon=" + objPosition[0].lon + 
+				", acc=" + objPosition[0].acc +
+				", alt=" + objPosition[0].alt +
+				", hdg=" + objPosition[0].hdg + 
+				", spd=" + objPosition[0].spd);
+	}	
 }
 
 function successPrevFn(arrPositions)
@@ -172,7 +186,13 @@ function successPrevFn(arrPositions)
 	// Example for testing.
 	for(var one in arrPositions)
 	{		
-		alert(arrPositions[one].dt);
+		alert("dt=" + arrPositions[one].dt + 
+				", lat=" + arrPositions[one].lat + 
+				", lon=" + arrPositions[one].lon + 
+				", acc=" + arrPositions[one].acc +
+				", alt=" + arrPositions[one].alt +
+				", hdg=" + arrPositions[one].hdg + 
+				", spd=" + arrPositions[one].spd);
 		break;
 	}
 }

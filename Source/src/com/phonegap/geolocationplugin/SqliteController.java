@@ -14,7 +14,6 @@ import android.content.Context;
 import android.util.Log;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 @SuppressLint("SimpleDateFormat")
@@ -25,18 +24,14 @@ public class SqliteController extends SQLiteOpenHelper {
     public SqliteController(Context applicationcontext) {
     	
         super(applicationcontext, "GeolocationPlugin.db", null, 1);
-        Log.d(LOGCAT,"Created");
     }
      
     @Override
     public void onCreate(SQLiteDatabase database) {
     	
-        if (!isExistsDataBase())
-        {
-            String query = "CREATE TABLE LocationDatas ( uid INTEGER PRIMARY KEY AUTOINCREMENT, dt REAL, lat TEXT, lon TEXT, acc TEXT, alt TEXT, hdg TEXT, spd TEXT)";
-            database.execSQL(query);
-            Log.d(LOGCAT,"LocationDatas Created");        	
-        }            	
+        String query = "CREATE TABLE LocationDatas ( uid INTEGER PRIMARY KEY AUTOINCREMENT, dt REAL, lat TEXT, lon TEXT, acc TEXT, alt TEXT, hdg TEXT, spd TEXT)";
+        database.execSQL(query);
+        Log.d(LOGCAT,"onCreate");        	
     }
     
     @Override
@@ -47,24 +42,6 @@ public class SqliteController extends SQLiteOpenHelper {
         onCreate(database);
     }
      
-    /***
-     * Check if the database exist
-     * 
-     * @return true if it exists, false if it doesn't
-     */
-    private boolean isExistsDataBase() {
-    	
-        SQLiteDatabase checkDB = null;
-        try {
-            checkDB = SQLiteDatabase.openDatabase("GeolocationPlugin.db", null,
-                    SQLiteDatabase.OPEN_READONLY);
-            checkDB.close();
-        } catch (SQLiteException e) {
-            // database doesn't exist yet.
-        }
-        return checkDB != null ? true : false;
-    }
-    
     /***
      * Insert to "LocationDatas" table the positions data.
      * @param queryValues
@@ -85,7 +62,7 @@ public class SqliteController extends SQLiteOpenHelper {
         database.insert("LocationDatas", null, values);
         database.close();
         
-        Log.d("LocationDatas", "Sqlite insert success");
+        Log.d(LOGCAT, "insertLocationData");
     }
      
     /***
@@ -97,7 +74,7 @@ public class SqliteController extends SQLiteOpenHelper {
         Log.d(LOGCAT,"delete");
         SQLiteDatabase database = this.getWritableDatabase();   
         String deleteQuery = "DELETE FROM LocationDatas where dt<"+ mSec;
-        Log.d("query",deleteQuery);    
+        Log.d(LOGCAT,deleteQuery);    
         database.execSQL(deleteQuery);
     }
      
@@ -141,7 +118,50 @@ public class SqliteController extends SQLiteOpenHelper {
     }
     
     /***
-     * Get all records over sec millisecond.
+     * Get all records over mSec millisecond.
+     * @param mSec
+     * @return
+     */
+    public JSONArray getLocationDatasWithinMilliSecond(int mSec)
+    {
+    	JSONArray locList = new JSONArray();
+    	
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");        	
+    	Calendar cal = Calendar.getInstance();
+    	long curTime = cal.getTimeInMillis() - mSec;
+    	
+        String selectQuery = "SELECT * FROM LocationDatas WHERE dt>" + curTime + " ORDER BY dt DESC";
+        SQLiteDatabase database = this.getWritableDatabase();
+        Cursor cursor = database.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                JSONObject oneLoc = new JSONObject();
+                try {                	
+                	cal.setTimeInMillis(cursor.getLong(1));
+                	String dt = dateFormat.format(cal.getTime());                	                	
+                    oneLoc.put("dt", dt);
+                    oneLoc.put("lat", Double.valueOf(cursor.getString(2)));
+                    oneLoc.put("lon", Double.valueOf(cursor.getString(3)));
+                    oneLoc.put("acc", Double.valueOf(cursor.getString(4)));
+                    oneLoc.put("alt", Double.valueOf(cursor.getString(5)));
+                    oneLoc.put("hdg", Double.valueOf(cursor.getString(6)));
+                    oneLoc.put("spd", Double.valueOf(cursor.getString(7)));
+                    
+                    locList.put(oneLoc);
+                    
+                    break;
+                } catch (JSONException e) {
+                	e.printStackTrace();
+                }
+                
+            } while (cursor.moveToNext());
+        }
+      
+        return locList;    	
+    }    
+    
+    /***
+     * Get all records over sec second.
      * @param sec
      * @return
      */
