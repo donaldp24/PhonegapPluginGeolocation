@@ -8,13 +8,13 @@ var GeolocationPlugin = {
 			cordova.exec(function(data){}, function(error){alert(error);}, 'GeolocationPlugin', 'stopservice', [options]);
 		},		
 		getcurrentpositions:function(options, successCurFn, failureFn) {
-			cordova.exec(successCurFn, failureFn, 'GeolocationPlugin', 'getcurrentpositions', [options]);
+			cordova.exec(successCurFn, failureFn, 'GeolocationPlugin', 'getcurrentposition', [options]);
 		},		
 		getpreviouspositions:function(options, successPrevFn, failureFn) {
 			cordova.exec(successPrevFn, failureFn, 'GeolocationPlugin', 'getpreviouspositions', [options]);
 		},
-		isServiceRunning:function() {
-			cordova.exec(isServiceRunning, function(error){alert(error);}, 'GeolocationPlugin', 'isServiceRunning', []);
+		isServiceRunning:function(isServiceRunning, errorLogger) {
+			cordova.exec(isServiceRunning, errorLogger, 'GeolocationPlugin', 'isServiceRunning', []);
 		}
 };
 

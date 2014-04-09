@@ -79,6 +79,46 @@ public class SqliteController extends SQLiteOpenHelper {
     }
      
     /***
+     * Get all unsynced positions.
+     * @param datetimeLastSync
+     * @return
+     */
+    public JSONArray getNewerThan(long datetimeLastSync)
+    {
+    	JSONArray locList = new JSONArray();
+    	
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");        	
+    	Calendar cal = Calendar.getInstance();
+    	
+        String selectQuery = "SELECT * FROM LocationDatas WHERE dt>" + datetimeLastSync + " ORDER BY dt DESC";
+        SQLiteDatabase database = this.getWritableDatabase();
+        Cursor cursor = database.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                JSONObject oneLoc = new JSONObject();
+                try {                	
+                	cal.setTimeInMillis(cursor.getLong(1));
+                	String dt = dateFormat.format(cal.getTime());                	                	
+                    oneLoc.put("dt", dt);
+                    oneLoc.put("lat", Double.valueOf(cursor.getString(2)));
+                    oneLoc.put("lon", Double.valueOf(cursor.getString(3)));
+                    oneLoc.put("acc", Double.valueOf(cursor.getString(4)));
+                    oneLoc.put("alt", Double.valueOf(cursor.getString(5)));
+                    oneLoc.put("hdg", Double.valueOf(cursor.getString(6)));
+                    oneLoc.put("spd", Double.valueOf(cursor.getString(7)));
+                    
+                    locList.put(oneLoc);
+                } catch (JSONException e) {
+                	e.printStackTrace();
+                }
+                
+            } while (cursor.moveToNext());
+        }
+      
+        return locList;    	
+    }    
+    
+    /***
      * Get the top records(num) in "LocationDatas" table.
      * @param num
      * @return
@@ -122,7 +162,7 @@ public class SqliteController extends SQLiteOpenHelper {
      * @param mSec
      * @return
      */
-    public JSONArray getLocationDatasWithinMilliSecond(int mSec)
+    public JSONArray getCurrentPositionWithinMilliSecond(int mSec)
     {
     	JSONArray locList = new JSONArray();
     	
@@ -159,19 +199,19 @@ public class SqliteController extends SQLiteOpenHelper {
       
         return locList;    	
     }    
-    
+
     /***
-     * Get all records over sec second.
-     * @param sec
+     * Get all records over mSec millisecond.
+     * @param mSec
      * @return
      */
-    public JSONArray getLocationDatasWithinLastSecond(int sec)
+    public JSONArray getPreviousPositionsWithinMilliSecond(int mSec)
     {
     	JSONArray locList = new JSONArray();
     	
     	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");        	
     	Calendar cal = Calendar.getInstance();
-    	long curTime = cal.getTimeInMillis() - (sec * 1000);
+    	long curTime = cal.getTimeInMillis() - mSec;
     	
         String selectQuery = "SELECT * FROM LocationDatas WHERE dt>" + curTime;
         SQLiteDatabase database = this.getWritableDatabase();
@@ -199,5 +239,5 @@ public class SqliteController extends SQLiteOpenHelper {
         }
       
         return locList;    	
-    }
+    }        
 }

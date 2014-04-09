@@ -3,6 +3,7 @@ package com.phonegap.geolocationplugin;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 
 public class GeolocationPluginBootReceiver extends BroadcastReceiver {  
 	
@@ -13,22 +14,14 @@ public class GeolocationPluginBootReceiver extends BroadcastReceiver {
 	 */
 	@Override  
 	public void onReceive(Context context, Intent intent) {
-		
-		// Get all the registered and loop through and start them
-		/*String[] serviceList = PropertyHelper.getBootServices(context);
-		
-		if (serviceList != null) {
-			for (int i = 0; i < serviceList.length; i++)
-			{
-				Intent serviceIntent = new Intent(serviceList[i]);         
-				context.startService(serviceIntent);
-			}
-		}*/
-		
+				
 		if ((intent.getAction() != null) && (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")))
 		{
-		    // Start the GeolocationPluginService service
-		    context.startService(new Intent(context, GeolocationPluginService.class));
+			if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(GeolocationPlugin.PREF_SERVICE_AUTOSTART, false))
+			{
+			    // Start the GeolocationPluginService service
+			    context.startService(new Intent(context, GeolocationPluginService.class));
+			}
 		}		
 	} 
 	

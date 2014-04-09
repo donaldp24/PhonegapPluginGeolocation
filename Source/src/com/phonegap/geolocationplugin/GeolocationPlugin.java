@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 
 public class GeolocationPlugin extends CordovaPlugin {
@@ -30,11 +29,17 @@ public class GeolocationPlugin extends CordovaPlugin {
 	public static final String START_NOTIF_ICON = "StartNotifIcon";
 	public static final String START_NOTIF_TEXT = "StartNotifText";
 		
+	public static final String STOP_SYNC_POSITIONS = "StopSyncPositions";
+
 	public static final String CURRENT_MAXIMUMAGE = "CurrentMaximumAge";
 	public static final String CURRENT_TIMEOUT = "CurrentTimeout";	
 	
 	public static final String PREVIOUS_NUM_POSITIONS = "PreviousNumPositions";
 	public static final String PREVIOUS_NUM_SECONDS = "PreviousNumSeconds";
+	
+	public static final String PREF_SERVICE_AUTOSTART = "PrefServiceAutoStart";
+	
+	public static final String DATETIME_LAST_SYNC = "DatetimeLastSync";
 	
 	public static final int SERVICE_STOP = 0;
 	public static final int SERVICE_RUNNING = 1;
@@ -84,8 +89,15 @@ public class GeolocationPlugin extends CordovaPlugin {
 		}
 		else if (action.equals("stopservice")) {
 			
-			Toast.makeText(cordova.getActivity().getApplicationContext(), "End Service", Toast.LENGTH_SHORT).show();
+			//Toast.makeText(cordova.getActivity().getApplicationContext(), "End Service", Toast.LENGTH_SHORT).show();
 
+			JSONObject json_data = args.getJSONObject(0);
+			boolean stopSyncPositions = json_data.getBoolean("syncPositions");
+			
+			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();
+			editor.putBoolean(STOP_SYNC_POSITIONS, stopSyncPositions);
+	        editor.commit();
+			
 			this.callback = callbackContext;
             cordova.getActivity().runOnUiThread(new Runnable() {
                     public void run() {
@@ -97,7 +109,7 @@ public class GeolocationPlugin extends CordovaPlugin {
             });
             return true;
 		}
-		else if (action.equals("getcurrentpositions")) {
+		else if (action.equals("getcurrentposition")) {
 			
 			//Toast.makeText(cordova.getActivity().getApplicationContext(), "Get Current Positions", Toast.LENGTH_SHORT).show();
 			
@@ -111,7 +123,7 @@ public class GeolocationPlugin extends CordovaPlugin {
                     	
                 		SqliteController sqliteCtrl = GeolocationPluginService.getSqliteControllerHandle();
                 		
-                		JSONArray locDatas = sqliteCtrl.getLocationDatasWithinMilliSecond(curMaxAge);
+                		JSONArray locDatas = sqliteCtrl.getCurrentPositionWithinMilliSecond(curMaxAge);
                 		
                 		if (locDatas.length() > 0)
                 		{
@@ -123,7 +135,7 @@ public class GeolocationPlugin extends CordovaPlugin {
                 			{
 								Thread.sleep(curTimeout);
 								
-								locDatas = sqliteCtrl.getLocationDatasWithinMilliSecond(curMaxAge);
+								locDatas = sqliteCtrl.getCurrentPositionWithinMilliSecond(curMaxAge);
 		                		if (locDatas.length() > 0)
 		                		{
 		                			callback.success(locDatas);		                			
@@ -161,7 +173,7 @@ public class GeolocationPlugin extends CordovaPlugin {
                     	}
                     	else if (prevNumSeconds > 0)
                     	{
-                    		locDatas = sqliteCtrl.getLocationDatasWithinLastSecond(prevNumSeconds);
+                    		locDatas = sqliteCtrl.getPreviousPositionsWithinMilliSecond(prevNumSeconds);
                     	}
 
                     	if (locDatas.length() > 0)
@@ -208,7 +220,7 @@ public class GeolocationPlugin extends CordovaPlugin {
 			
 			for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
 			{ 
-				if (GeolocationPluginService.class.getSimpleName().equals(service.service.getClassName()))
+				if (GeolocationPluginService.class.getName().equals(service.service.getClassName()))
 				{ 
 					result = true; 
 				} 
@@ -222,22 +234,6 @@ public class GeolocationPlugin extends CordovaPlugin {
 	}
 	
 	/***
-	 * Register for auto start when the phone turns on.
-	 */
-	public void registerForBootStart()
-	{
-		PropertyHelper.addBootService(cordova.getActivity(), GeolocationPluginService.class.getSimpleName());
-	}
-	
-	/***
-	 * Unregister for auto start when the phone turns on.
-	 */
-	public void unregisterForBootStart()
-	{
-		PropertyHelper.removeBootService(cordova.getActivity(), GeolocationPluginService.class.getSimpleName());
-	}
-	
-	/***
 	 * Start GeolocationPluginService.
 	 */
 	public void startservice()
@@ -246,7 +242,9 @@ public class GeolocationPlugin extends CordovaPlugin {
 		{
 			cordova.getActivity().startService(new Intent(cordova.getActivity(), GeolocationPluginService.class));
 			
-			registerForBootStart();
+			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();
+			editor.putBoolean(PREF_SERVICE_AUTOSTART, true);
+	        editor.commit();			
 		}
 	}
 	
@@ -255,15 +253,13 @@ public class GeolocationPlugin extends CordovaPlugin {
 	 */
 	public void stopservice()
 	{
-		if (!isServiceRunning())
+		if (isServiceRunning())
 		{
 			cordova.getActivity().stopService(new Intent(cordova.getActivity(), GeolocationPluginService.class));
 			
-			unregisterForBootStart();
+			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();
+			editor.putBoolean(PREF_SERVICE_AUTOSTART, false);
+	        editor.commit();			
 		}
 	}
-
-
-	
-	
 }

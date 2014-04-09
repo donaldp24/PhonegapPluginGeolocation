@@ -57,27 +57,6 @@ var app = {
 
 ///////////////////////////////////////////////////////////////
 
-function isServiceRunning(flag)
-{	
-	var startBtn = document.getElementById("startService");
-	var endBtn = document.getElementById("endService");
-	var curBtn = document.getElementById("getCurrentPositions");
-	var preBtn = document.getElementById("getPreviousPositions");
-
-	if (flag > 0) {
-		startBtn.disabled = true;
-		endBtn.disabled = false;
-		curBtn.disabled = false;
-		preBtn.disabled = false;		
-	}
-	else {
-		startBtn.disabled = false;
-		endBtn.disabled = true;
-		curBtn.disabled = true;
-		preBtn.disabled = true;		
-	}
-}
-
 function updateUI(eventType)
 {
 	var startBtn = document.getElementById("startService");
@@ -97,19 +76,6 @@ function updateUI(eventType)
 		curBtn.disabled = true;
 		preBtn.disabled = true;		
 	}
-	/*else if (eventType == "onGetCurrentPositions") {		
-		startBtn.disabled = true;
-		endBtn.disabled = false;
-		curBtn.disabled = false;
-		preBtn.disabled = false;
-	}
-	else if (eventType == "onPreviousPositions") {		
-		startBtn.disabled = true;
-		endBtn.disabled = false;
-		curBtn.disabled = false;
-		preBtn.disabled = false;
-	}*/
-
 }
 
 
@@ -139,7 +105,7 @@ function onStopService()
 	//navigator.geolocationplugin.stopservice(true);
 }
 
-function onGetCurrentPositions()
+function onGetCurrentPosition()
 {
 	var options = {
 		    maximumAge: "3000",					// same as cordova geolocationOptions
@@ -154,7 +120,7 @@ function onPreviousPositions()
 {
 	var options = {
 		    numPositions: "10",					// send to server when X positions have been recorded
-		    numSeconds: "60"					// send to server when X seconds have passed
+		    numSeconds: "6000"					// send to server when X milliseconds have passed
 			};
 	
 	GeolocationPlugin.getpreviouspositions(options, successPrevFn, failureFn);
@@ -163,7 +129,7 @@ function onPreviousPositions()
 
 function onIsServiceRunning()
 {
-	GeolocationPlugin.isServiceRunning();
+	GeolocationPlugin.isServiceRunning(isServiceRunning, errorLogger);
 }
 
 function successCurFn(objPosition)
@@ -200,6 +166,32 @@ function successPrevFn(arrPositions)
 function failureFn(error)
 {
 	alert(error);
+}
+
+function isServiceRunning(flag)
+{	
+	var startBtn = document.getElementById("startService");
+	var endBtn = document.getElementById("endService");
+	var curBtn = document.getElementById("getCurrentPositions");
+	var preBtn = document.getElementById("getPreviousPositions");
+
+	if (flag > 0) {
+		startBtn.disabled = true;
+		endBtn.disabled = false;
+		curBtn.disabled = false;
+		preBtn.disabled = false;		
+	}
+	else {
+		startBtn.disabled = false;
+		endBtn.disabled = true;
+		curBtn.disabled = true;
+		preBtn.disabled = true;		
+	}
+}
+
+function errorLogger(error)
+{
+	alert(error);	
 }
 
 

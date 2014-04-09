@@ -34,6 +34,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -61,6 +62,7 @@ public class GeolocationPluginService extends Service {
 	//private static int	m_timeout = 5000;
 	private static int	m_maxPositions = 10;
 	private static int  m_maxSeconds = 60;
+	private static boolean m_syncPosition = true;
 	private static String m_notifIcon = "";
 	private static String m_notifText = "";
 	
@@ -73,6 +75,7 @@ public class GeolocationPluginService extends Service {
     
     private static int NOTIFICATION_ID = 12345;
     
+    private static long m_lastSendMilliSeconds = 0; 
     
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -91,13 +94,17 @@ public class GeolocationPluginService extends Service {
     	//m_timeout = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_TIMEOUT, 5000);
     	m_maxPositions = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_POSITIONS, 10);
     	m_maxSeconds = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_SECONDS, 60);
-
+    	m_syncPosition = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean(GeolocationPlugin.STOP_SYNC_POSITIONS, true);
+    	
         mlocManager = (android.location.LocationManager)getSystemService(Context.LOCATION_SERVICE);
         mlocListener = new MyLocationListener();
 		        
 		m_getLocationHandler = new Handler();
 		
 		sqliteCtrl = new SqliteController(getApplicationContext());
+		
+        m_lastSendMilliSeconds = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getLong(GeolocationPlugin.DATETIME_LAST_SYNC, 
+        		Calendar.getInstance().getTimeInMillis());		
     }
 
     @Override
@@ -141,13 +148,25 @@ public class GeolocationPluginService extends Service {
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, targetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nManager.notify(NOTIFICATION_ID, builder.build());
+        nManager.notify(NOTIFICATION_ID, builder.build());               
     }
 
     @Override
     public void onDestroy() {
-        Toast.makeText(getApplicationContext(), "Service destroyed", Toast.LENGTH_SHORT).show();
+    	
+        //Toast.makeText(getApplicationContext(), "Service destroyed", Toast.LENGTH_SHORT).show();
 
+    	if (m_syncPosition)
+    	{
+    		JSONArray locDatas = sqliteCtrl.getNewerThan(m_lastSendMilliSeconds);
+    		SendToServerPositions(locDatas);
+    		
+        	Calendar cal = Calendar.getInstance();
+    		m_lastSendMilliSeconds = cal.getTimeInMillis();
+    		
+    		StoreDatetimeLastSync(m_lastSendMilliSeconds);    		
+    	}
+    	
         if (m_timerRecord != null)
         {
         	m_timerRecord.cancel();
@@ -293,6 +312,16 @@ public class GeolocationPluginService extends Service {
     	return false;
     }
     
+    /***
+     * Store last synced datetime.
+     */
+    public void StoreDatetimeLastSync(long datetimeLastSync)
+    {
+    	SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+		editor.putLong(GeolocationPlugin.DATETIME_LAST_SYNC, datetimeLastSync);
+        editor.commit();    	
+    }
+    
     
     /***
      * Timer for recording to SQLite db the positions.(requestFrequency time period)  
@@ -310,8 +339,13 @@ public class GeolocationPluginService extends Service {
             	if (m_cnt > m_maxPositions)
             	{
             		// Send to server the positions.
-            		JSONArray locDatas = sqliteCtrl.getLocationDatas(1);        		
+            		JSONArray locDatas = sqliteCtrl.getNewerThan(m_lastSendMilliSeconds);
             		SendToServerPositions(locDatas);
+            		
+                	Calendar cal = Calendar.getInstance();
+            		m_lastSendMilliSeconds = cal.getTimeInMillis();
+            		
+            		StoreDatetimeLastSync(m_lastSendMilliSeconds);
             		
             		m_cnt = 0;
             	}
@@ -353,8 +387,13 @@ public class GeolocationPluginService extends Service {
         public void run() {
         	
     		// Send to server the positions.
-    		JSONArray locDatas = sqliteCtrl.getLocationDatas(1);        	    		   		    		
+    		JSONArray locDatas = sqliteCtrl.getNewerThan(m_lastSendMilliSeconds);    		
     		SendToServerPositions(locDatas);
+
+    		Calendar cal = Calendar.getInstance();
+    		m_lastSendMilliSeconds = cal.getTimeInMillis();
+    		
+    		StoreDatetimeLastSync(m_lastSendMilliSeconds);    		
         }
     }
     
