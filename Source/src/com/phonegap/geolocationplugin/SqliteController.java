@@ -213,7 +213,7 @@ public class SqliteController extends SQLiteOpenHelper {
     	Calendar cal = Calendar.getInstance();
     	long curTime = cal.getTimeInMillis() - mSec;
     	
-        String selectQuery = "SELECT * FROM LocationDatas WHERE dt>" + curTime;
+        String selectQuery = "SELECT * FROM LocationDatas WHERE dt>" + curTime + " ORDER BY dt DESC";
         SQLiteDatabase database = this.getWritableDatabase();
         Cursor cursor = database.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
