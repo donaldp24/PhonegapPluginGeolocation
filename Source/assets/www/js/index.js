@@ -90,6 +90,7 @@ function onStartService()
 		    maxPositions: "10",					// send to server when X positions have been recorded
 		    maxSeconds: "60",					// send to server when X seconds have passed
 		    notifIcon: "/assets/www/noti.icon",	// icon to display on the notification(path relative to /assets/www)
+		    notifTitle: "Plugin",				// title to display on the notification
 		    notifText: "start service notify"	// text to display on the notification
 			};
 	
@@ -101,7 +102,11 @@ function onStopService()
 {
 	updateUI("onStopService");
 	
-	GeolocationPlugin.stopservice(true);
+	var options = {
+			syncPositions: true // send unsynced positions to server before stopping 
+			};
+	
+	GeolocationPlugin.stopservice(options);
 	//navigator.geolocationplugin.stopservice(true);
 }
 

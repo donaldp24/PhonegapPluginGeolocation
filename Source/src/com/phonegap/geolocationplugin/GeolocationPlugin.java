@@ -27,6 +27,7 @@ public class GeolocationPlugin extends CordovaPlugin {
 	public static final String START_MAX_POSITIONS = "StartMaxPositions";
 	public static final String START_MAX_SECONDS = "StartMaxSeconds";
 	public static final String START_NOTIF_ICON = "StartNotifIcon";
+	public static final String START_NOTIF_TITLE = "StartNotifTitle";
 	public static final String START_NOTIF_TEXT = "StartNotifText";
 		
 	public static final String STOP_SYNC_POSITIONS = "StopSyncPositions";
@@ -60,6 +61,7 @@ public class GeolocationPlugin extends CordovaPlugin {
 			int startMaxPos = json_data.getInt("maxPositions");
 			int startMaxSec = json_data.getInt("maxSeconds");
 			String startNotiIcon = json_data.getString("notifIcon");
+			String startNotiTitle = json_data.getString("notifTitle");
 			String startNotiText = json_data.getString("notifText");
 			
 
@@ -71,6 +73,7 @@ public class GeolocationPlugin extends CordovaPlugin {
 			editor.putInt(START_MAX_POSITIONS, startMaxPos);
 			editor.putInt(START_MAX_SECONDS, startMaxSec);
 			editor.putString(START_NOTIF_ICON, startNotiIcon);
+			editor.putString(START_NOTIF_TITLE, startNotiTitle);
 			editor.putString(START_NOTIF_TEXT, startNotiText);
 	        editor.commit();
 
@@ -92,7 +95,13 @@ public class GeolocationPlugin extends CordovaPlugin {
 			//Toast.makeText(cordova.getActivity().getApplicationContext(), "End Service", Toast.LENGTH_SHORT).show();
 
 			JSONObject json_data = args.getJSONObject(0);
-			boolean stopSyncPositions = json_data.getBoolean("syncPositions");
+			boolean stopSyncPositions = true;
+			try{
+				json_data.getBoolean("syncPositions");
+			}catch(Exception e)
+			{
+				//
+			}
 			
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();
 			editor.putBoolean(STOP_SYNC_POSITIONS, stopSyncPositions);

@@ -65,6 +65,7 @@ public class GeolocationPluginService extends Service {
 	private static boolean m_syncPosition = true;
 	private static String m_notifIcon = "";
 	private static String m_notifText = "";
+	private static String m_notifTitle = "";
 	
 	private static Handler	m_getLocationHandler = null; 
     
@@ -95,6 +96,8 @@ public class GeolocationPluginService extends Service {
     	m_maxPositions = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_POSITIONS, 10);
     	m_maxSeconds = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt(GeolocationPlugin.START_MAX_SECONDS, 60);
     	m_syncPosition = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean(GeolocationPlugin.STOP_SYNC_POSITIONS, true);
+    	m_notifTitle = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(GeolocationPlugin.START_NOTIF_TITLE, "GeolocationPlugin");
+    	m_notifText  = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(GeolocationPlugin.START_NOTIF_TEXT , "service running ...");
     	
         mlocManager = (android.location.LocationManager)getSystemService(Context.LOCATION_SERVICE);
         mlocListener = new MyLocationListener();
@@ -137,7 +140,7 @@ public class GeolocationPluginService extends Service {
     	NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("GeolocationPlugin")
+                        .setContentTitle(m_notifTitle)
                         .setContentText(m_notifText);
     	
     	//create a permanent notification while service is running
