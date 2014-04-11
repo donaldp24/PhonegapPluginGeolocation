@@ -7,10 +7,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
 
@@ -18,6 +21,8 @@ public class GeolocationPlugin extends CordovaPlugin {
 	
 	private CallbackContext callback;
 		
+	private static final int PERIOD = 5000;
+	
 	public static final String PREF_NAME = "GeolocationPlugin";
 	
 	public static final String START_URL = "StartUrl";
@@ -243,13 +248,29 @@ public class GeolocationPlugin extends CordovaPlugin {
 	}
 	
 	/***
+	 * Start GeolocationPluginService by AlarmManager.
+	 * @param ctxt
+	 */
+	public static void scheduleAlarms(Context ctxt)
+	{
+	    AlarmManager mgr = (AlarmManager)ctxt.getSystemService(Context.ALARM_SERVICE);
+	    
+	    Intent intent = new Intent(ctxt, GeolocationPluginService.class);
+	    
+	    PendingIntent pi = PendingIntent.getService(ctxt, 0, intent, 0);
+
+	    mgr.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + PERIOD, PERIOD, pi);
+	}			
+	
+	/***
 	 * Start GeolocationPluginService.
 	 */
 	public void startservice()
 	{
 		if (!isServiceRunning())
 		{
-			cordova.getActivity().startService(new Intent(cordova.getActivity(), GeolocationPluginService.class));
+			//cordova.getActivity().startService(new Intent(cordova.getActivity(), GeolocationPluginService.class));
+			scheduleAlarms(cordova.getActivity());
 			
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();
 			editor.putBoolean(PREF_SERVICE_AUTOSTART, true);
@@ -258,12 +279,29 @@ public class GeolocationPlugin extends CordovaPlugin {
 	}
 	
 	/***
+	 * Stop AlarmManager.
+	 */
+	public static void cancelAlarms(Context ctxt)
+	{
+	    AlarmManager mgr = (AlarmManager)ctxt.getSystemService(Context.ALARM_SERVICE);
+	    
+	    Intent intent = new Intent(ctxt, GeolocationPluginService.class);
+	    
+	    PendingIntent pi = PendingIntent.getService(ctxt, 0, intent, 0);
+
+	    mgr.cancel(pi);
+	}			
+	
+	
+	/***
 	 * Stop GeolocationPluginService.
 	 */
 	public void stopservice()
 	{
 		if (isServiceRunning())
 		{
+			cancelAlarms(cordova.getActivity());
+			
 			cordova.getActivity().stopService(new Intent(cordova.getActivity(), GeolocationPluginService.class));
 			
 			SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(cordova.getActivity()).edit();

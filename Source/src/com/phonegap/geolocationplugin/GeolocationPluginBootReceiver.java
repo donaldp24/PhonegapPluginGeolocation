@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
 
-public class GeolocationPluginBootReceiver extends BroadcastReceiver {  
+public class GeolocationPluginBootReceiver extends BroadcastReceiver {
 	
 	/*
 	 ************************************************************************************************
@@ -20,9 +20,10 @@ public class GeolocationPluginBootReceiver extends BroadcastReceiver {
 			if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean(GeolocationPlugin.PREF_SERVICE_AUTOSTART, false))
 			{
 			    // Start the GeolocationPluginService service
-			    context.startService(new Intent(context, GeolocationPluginService.class));
+			    //context.startService(new Intent(context, GeolocationPluginService.class));
+
+				GeolocationPlugin.scheduleAlarms(context);				
 			}
 		}		
-	} 
-	
+	}	
 } 
